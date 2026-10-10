@@ -20,7 +20,7 @@ def init_db():
         )
     ''')
     
-    # Mood logs table tied to username
+    # Base tables
     c.execute('''
         CREATE TABLE IF NOT EXISTS mood_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +31,6 @@ def init_db():
         )
     ''')
     
-    # Journal entries table tied to username
     c.execute('''
         CREATE TABLE IF NOT EXISTS journal_entries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,6 +39,18 @@ def init_db():
             entry TEXT
         )
     ''')
+    
+    # Auto-add missing columns if needed
+    try:
+        c.execute("ALTER TABLE mood_logs ADD COLUMN username TEXT")
+    except sqlite3.OperationalError:
+        pass
+        
+    try:
+        c.execute("ALTER TABLE journal_entries ADD COLUMN username TEXT")
+    except sqlite3.OperationalError:
+        pass
+        
     conn.commit()
     conn.close()
 
@@ -104,7 +115,7 @@ def fetch_journal_history(username):
     return entries
 
 # ==========================================
-# 2. FRONTEND & CUSTOM SOFT THEME STYLING
+# 2. FRONTEND & CUSTOM THEME STYLING
 # ==========================================
 st.set_page_config(page_title="MindCare - Pro Edition", page_icon="🧠", layout="wide")
 
@@ -117,9 +128,8 @@ st.markdown("""
     
     /* Sidebar Styling & Width */
     section[data-testid="stSidebar"] {
-        background: rgba(240, 246, 242, 0.92) !important;
-        backdrop-filter: blur(16px) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.7) !important;
+        background: rgba(240, 246, 242, 0.95) !important;
+        border-right: 1px solid rgba(200, 220, 208, 0.7) !important;
         padding-top: 1rem;
         min-width: 280px !important;
         max-width: 280px !important;
@@ -143,46 +153,42 @@ st.markdown("""
         background-color: #659C7B !important;
         box-shadow: 0 4px 12px rgba(123, 179, 145, 0.4) !important;
     }
-    .stTextArea textarea, .stSelectbox select, .stTextInput input {
-        border-radius: 12px !important;
-        border: 1px solid #CBD5E1 !important;
-        background-color: #FFFFFF !important;
-    }
 
-    /* CUSTOM PILL NAVIGATION & BLACK TEXT FIX */
+    /* COMPLETE RADIO BUTTON & DOT REMOVAL STYLING */
     div[data-testid="stSidebar"] div[role="radiogroup"] label input,
-    div[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stRadioButtonIcon"] {
+    div[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stRadioButtonIcon"],
+    div[data-testid="stSidebar"] div[role="radiogroup"] label svg,
+    div[data-testid="stSidebar"] div[role="radiogroup"] label ::before,
+    div[data-testid="stSidebar"] div[role="radiogroup"] label ::after {
         display: none !important;
+        width: 0px !important;
+        height: 0px !important;
     }
     
+    /* Navigation Card Containers */
     div[data-testid="stSidebar"] div[role="radiogroup"] > label {
-        background-color: rgba(255, 255, 255, 0.5) !important;
-        border-radius: 16px !important;
-        padding: 10px 14px !important;
-        margin-bottom: 6px !important;
-        border: 1px solid transparent !important;
+        background-color: rgba(255, 255, 255, 0.6) !important;
+        border-radius: 14px !important;
+        padding: 10px 16px !important;
+        margin-bottom: 8px !important;
+        border: 1px solid #D1E2D7 !important;
         cursor: pointer !important;
         transition: all 0.2s ease-in-out !important;
     }
     
-    section[data-testid="stSidebar"] div[role="radiogroup"] label,
-    section[data-testid="stSidebar"] div[role="radiogroup"] label span,
-    section[data-testid="stSidebar"] div[role="radiogroup"] label p,
-    section[data-testid="stSidebar"] div[role="radiogroup"] label div {
+    /* Ensure solid black text for readability */
+    section[data-testid="stSidebar"] div[role="radiogroup"] label * {
         color: #000000 !important;
         opacity: 1 !important;
         font-weight: 600 !important;
         font-size: 14px !important;
     }
     
+    /* Active Selected Item Highlight */
     div[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] {
         background-color: #B2D8C0 !important;
-        box-shadow: 0 4px 12px rgba(178, 216, 192, 0.45) !important;
-    }
-    
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] p {
-        color: #052E16 !important;
-        font-weight: 700 !important;
+        border-color: #88C4A0 !important;
+        box-shadow: 0 4px 10px rgba(178, 216, 192, 0.5) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -226,10 +232,10 @@ if not st.session_state.logged_in:
             else:
                 st.warning("Please fill in both fields.")
                 
-    st.stop() # Stop execution here if not logged in
+    st.stop()
 
 # ==========================================
-# 4. MAIN APP (IF LOGGED IN)
+# 4. MAIN APP (LOGGED IN)
 # ==========================================
 st.title("🧠 MindCare: Student Well-Being Platform")
 st.write(f"Welcome back, **{st.session_state.username}**! Your secure, local space for academic mindfulness.")
@@ -436,5 +442,5 @@ elif selected_clean == "Privacy & Account":
     st.markdown(f"""
     * **Active Account:** `{st.session_state.username}`
     * **Data Storage:** Your journal reflections and mood scores are stored locally in an encrypted hash format inside your device's SQLite database (`mindcare.db`).
-    * **Privacy Guarantee:** No data is shared with third parties. Your emotional well-being data stays strictly confidential on your local system or secure deployment server.
+    * **Privacy Guarantee:** No data is shared with third parties. Your emotional well-being data stays strictly confidential.
     """)
