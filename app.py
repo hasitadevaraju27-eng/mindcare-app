@@ -11,7 +11,6 @@ def init_db():
     conn = sqlite3.connect("mindcare.db")
     c = conn.cursor()
     
-    # Users table
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
@@ -20,7 +19,6 @@ def init_db():
         )
     ''')
     
-    # Base tables
     c.execute('''
         CREATE TABLE IF NOT EXISTS mood_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +38,6 @@ def init_db():
         )
     ''')
     
-    # Auto-add missing columns if needed
     try:
         c.execute("ALTER TABLE mood_logs ADD COLUMN username TEXT")
     except sqlite3.OperationalError:
@@ -121,25 +118,54 @@ st.set_page_config(page_title="MindCare - Pro Edition", page_icon="🧠", layout
 
 st.markdown("""
     <style>
+    /* Global App Background & Text Color */
     .stApp {
-        background-color: #F7F9F8;
-        color: #2D3748;
+        background-color: #F7F9F8 !important;
+        color: #1A202C !important;
     }
     
-    /* Sidebar Styling & Width */
+    /* Headers Styling */
+    h1, h2, h3, h4, h5, h6, span, p, label {
+        color: #2E4A3D !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    /* Sidebar Layout */
     section[data-testid="stSidebar"] {
-        background: rgba(240, 246, 242, 0.95) !important;
-        border-right: 1px solid rgba(200, 220, 208, 0.7) !important;
+        background-color: #EBF2EE !important;
+        border-right: 1px solid #C8DCD0 !important;
         padding-top: 1rem;
         min-width: 280px !important;
         max-width: 280px !important;
     }
     
-    h1, h2, h3 {
-        color: #2E4A3D !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* FIX FOR INPUT FIELDS & TEXT AREAS (JOURNAL, API KEY, CHAT) */
+    textarea, input, div[data-baseweb="input"] input, div[data-baseweb="textarea"] textarea {
+        background-color: #FFFFFF !important;
+        color: #1A202C !important;
+        border: 1px solid #CBD5E0 !important;
+        border-radius: 8px !important;
     }
     
+    /* Chat Input Bar Fix */
+    div[data-testid="stChatInput"] textarea {
+        background-color: #FFFFFF !important;
+        color: #1A202C !important;
+    }
+
+    /* FIX FOR CHAT MESSAGES & BUBBLES */
+    div[data-testid="stChatMessage"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        margin-bottom: 8px !important;
+    }
+    div[data-testid="stChatMessage"] p, div[data-testid="stChatMessage"] div {
+        color: #1A202C !important;
+    }
+    
+    /* Buttons Styling */
     .stButton>button {
         background-color: #7BB391 !important;
         color: white !important;
@@ -154,41 +180,36 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(123, 179, 145, 0.4) !important;
     }
 
-    /* COMPLETE RADIO BUTTON & DOT REMOVAL STYLING */
-    div[data-testid="stSidebar"] div[role="radiogroup"] label input,
+    /* COMPLETE HIDING OF RADIO DOTS & ICONS IN SIDEBAR */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"],
     div[data-testid="stSidebar"] div[role="radiogroup"] label div[data-testid="stRadioButtonIcon"],
-    div[data-testid="stSidebar"] div[role="radiogroup"] label svg,
-    div[data-testid="stSidebar"] div[role="radiogroup"] label ::before,
-    div[data-testid="stSidebar"] div[role="radiogroup"] label ::after {
+    div[data-testid="stSidebar"] div[role="radiogroup"] label svg {
         display: none !important;
-        width: 0px !important;
-        height: 0px !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
     }
     
-    /* Navigation Card Containers */
+    /* Navigation Card Items */
     div[data-testid="stSidebar"] div[role="radiogroup"] > label {
-        background-color: rgba(255, 255, 255, 0.6) !important;
-        border-radius: 14px !important;
-        padding: 10px 16px !important;
-        margin-bottom: 8px !important;
-        border: 1px solid #D1E2D7 !important;
+        background-color: #FFFFFF !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 6px !important;
+        border: 1px solid #C8DCD0 !important;
         cursor: pointer !important;
-        transition: all 0.2s ease-in-out !important;
     }
     
-    /* Ensure solid black text for readability */
-    section[data-testid="stSidebar"] div[role="radiogroup"] label * {
-        color: #000000 !important;
-        opacity: 1 !important;
+    div[data-testid="stSidebar"] div[role="radiogroup"] label p {
+        color: #2D3748 !important;
         font-weight: 600 !important;
         font-size: 14px !important;
     }
     
-    /* Active Selected Item Highlight */
+    /* Selected Navigation Card Item */
     div[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] {
         background-color: #B2D8C0 !important;
-        border-color: #88C4A0 !important;
-        box-shadow: 0 4px 10px rgba(178, 216, 192, 0.5) !important;
+        border-color: #7BB391 !important;
     }
     </style>
 """, unsafe_allow_html=True)
